@@ -11,10 +11,33 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // For fresh installs, delete any orphaned grades
+        if (Schema::hasTable('grades')) {
+            \DB::table('grades')->delete();
+        }
+
         Schema::table('grades', function (Blueprint $table) {
-            $table->foreignId('user_id')->after('id')->constrained()->onDelete('cascade');
-            $table->dropUnique(['class_id']);
-            $table->unique(['user_id', 'class_id']);
+            if (!Schema::hasColumn('grades', 'user_id')) {
+                $table->foreignId('user_id')->after('id')->constrained()->onDelete('cascade');
+            }
+        });
+
+        // Drop old unique constraint if it exists
+        try {
+            Schema::table('grades', function (Blueprint $table) {
+                $table->dropUnique(['class_id']);
+            });
+        } catch (\Exception $e) {
+            // Constraint might not exist, continue
+        }
+
+        // Add new unique constraint
+        Schema::table('grades', function (Blueprint $table) {
+            try {
+                $table->unique(['user_id', 'class_id']);
+            } catch (\Exception $e) {
+                // Might already exist
+            }
         });
     }
 
