@@ -19,6 +19,13 @@
         <header class="system-header">
             <div class="header-top">
                 <span class="system-id">HBS CLASS TRACKER v1.0</span>
+                <div class="user-info">
+                    <span>USER: {{ auth()->user()->name }}</span>
+                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                        @csrf
+                        <button type="submit" class="logout-button">LOGOUT</button>
+                    </form>
+                </div>
                 <span class="system-date" id="currentDate">{{ date('Y-m-d H:i:s') }}</span>
             </div>
             <div class="header-title">

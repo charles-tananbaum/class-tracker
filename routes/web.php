@@ -29,12 +29,25 @@ Route::get('/health', function () {
     }
 });
 
-Route::get('/', [ClassController::class, 'index'])->name('classes.index');
-Route::get('/classes/{class}/participation', [ClassController::class, 'checkParticipation'])->name('classes.check-participation');
-Route::post('/classes/{class}/participation', [ClassController::class, 'toggleParticipation'])->name('classes.toggle-participation');
-Route::post('/classes/{class}/grade', [ClassController::class, 'updateGrade'])->name('classes.update-grade');
+// Authentication routes
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [\App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login']);
+    Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegisterForm'])->name('register');
+    Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register']);
+});
 
-// Route model binding for HbsClass
+// Protected routes
+Route::middleware('auth')->group(function () {
+    Route::get('/', [ClassController::class, 'index'])->name('classes.index');
+    Route::get('/classes/{class}/participation', [ClassController::class, 'checkParticipation'])->name('classes.check-participation');
+    Route::post('/classes/{class}/participation', [ClassController::class, 'toggleParticipation'])->name('classes.toggle-participation');
+    Route::post('/classes/{class}/grade', [ClassController::class, 'updateGrade'])->name('classes.update-grade');
+    Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
+});
+
+// Route model binding for HbsClass (filtered by authenticated user)
 Route::bind('class', function ($value) {
-    return HbsClass::findOrFail($value);
+    return HbsClass::where('user_id', auth()->id())
+        ->findOrFail($value);
 });

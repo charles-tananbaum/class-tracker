@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Grade extends Model
 {
     protected $fillable = [
+        'user_id',
         'class_id',
         'midterm',
         'homework',
@@ -23,5 +24,10 @@ class Grade extends Model
     public function hbsClass(): BelongsTo
     {
         return $this->belongsTo(HbsClass::class, 'class_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }
