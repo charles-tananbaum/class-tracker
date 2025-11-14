@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>HBS CLASS TRACKER - SYSTEM 1977</title>
     <link rel="stylesheet" href="{{ asset('css/retro-scifi.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
     </style>
@@ -105,6 +106,52 @@
                     </div>
                 @endforeach
             </div>
+
+            <!-- Summary Table -->
+            <div class="summary-section">
+                <div class="section-label">CLASS SUMMARY REPORT</div>
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th>CLASS CODE</th>
+                            <th>CLASS NAME</th>
+                            <th>PARTICIPATION DAYS</th>
+                            <th>MIDTERM</th>
+                            <th>HOMEWORK</th>
+                            <th>FINAL</th>
+                            <th>AVERAGE GRADE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($classes as $class)
+                            @php
+                                $participationCount = $class->participations->count();
+                                $midterm = $class->grade->midterm ?? null;
+                                $homework = $class->grade->homework ?? null;
+                                $final = $class->grade->final ?? null;
+                                $grades = array_filter([$midterm, $homework, $final], function($g) { return $g !== null; });
+                                $average = count($grades) > 0 ? round(array_sum($grades) / count($grades), 2) : null;
+                            @endphp
+                            <tr data-class-id="{{ $class->id }}">
+                                <td class="class-code-cell">{{ $class->code }}</td>
+                                <td>{{ $class->name }}</td>
+                                <td class="participation-cell" id="summary-participation-{{ $class->id }}">{{ $participationCount }}</td>
+                                <td class="grade-cell" id="summary-midterm-{{ $class->id }}">{{ $midterm !== null ? number_format($midterm, 2) : '--' }}</td>
+                                <td class="grade-cell" id="summary-homework-{{ $class->id }}">{{ $homework !== null ? number_format($homework, 2) : '--' }}</td>
+                                <td class="grade-cell" id="summary-final-{{ $class->id }}">{{ $final !== null ? number_format($final, 2) : '--' }}</td>
+                                <td class="average-cell" id="summary-average-{{ $class->id }}">{{ $average !== null ? number_format($average, 2) : '--' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr class="summary-total">
+                            <td colspan="2">TOTAL</td>
+                            <td id="total-participation">{{ $classes->sum(fn($c) => $c->participations->count()) }}</td>
+                            <td colspan="4"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </main>
 
         <footer class="system-footer">
@@ -118,9 +165,54 @@
         </footer>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         // CSRF token setup
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+        // Initialize Flatpickr for all date inputs
+        document.querySelectorAll('.date-input').forEach(input => {
+            flatpickr(input, {
+                dateFormat: "Y-m-d",
+                theme: "dark",
+                allowInput: true,
+                onChange: function(selectedDates, dateStr, instance) {
+                    const classId = input.dataset.classId;
+                    checkParticipationForDate(classId, dateStr);
+                }
+            });
+        });
+        
+        // Check participation status for a specific date
+        function checkParticipationForDate(classId, date) {
+            const btn = document.querySelector(`.toggle-btn[data-class-id="${classId}"]`);
+            
+            // Fetch participation status for this date
+            fetch(`/classes/${classId}/participation?date=${date}`, {
+                method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.has_participation) {
+                    btn.dataset.participated = '1';
+                    btn.querySelector('.btn-text').textContent = 'ACTIVE';
+                    btn.classList.add('active');
+                } else {
+                    btn.dataset.participated = '0';
+                    btn.querySelector('.btn-text').textContent = 'INACTIVE';
+                    btn.classList.remove('active');
+                }
+            })
+            .catch(() => {
+                // Fallback: reset to inactive
+                btn.dataset.participated = '0';
+                btn.querySelector('.btn-text').textContent = 'INACTIVE';
+                btn.classList.remove('active');
+            });
+        }
         
         // Update date display
         function updateDate() {
@@ -189,34 +281,69 @@
                         setTimeout(() => {
                             this.textContent = 'SAVE GRADES';
                         }, 2000);
+                        updateSummaryTable(classId, midterm, homework, final);
                     }
                 });
             });
         });
 
-        // Update participation count (would need to fetch from server)
+        // Update participation count
         function updateParticipationCount(classId) {
             const countElement = document.querySelector(`[data-class-id="${classId}"] .count-value`);
-            // In a real app, you'd fetch the updated count from the server
-            // For now, just increment/decrement locally
+            const summaryCount = document.getElementById(`summary-participation-${classId}`);
             const currentCount = parseInt(countElement.textContent);
             const btn = document.querySelector(`.toggle-btn[data-class-id="${classId}"]`);
+            
+            let newCount;
             if (btn.dataset.participated === '1') {
-                countElement.textContent = currentCount + 1;
+                newCount = currentCount + 1;
             } else {
-                countElement.textContent = Math.max(0, currentCount - 1);
+                newCount = Math.max(0, currentCount - 1);
+            }
+            
+            countElement.textContent = newCount;
+            if (summaryCount) {
+                summaryCount.textContent = newCount;
+            }
+            
+            // Update total participation
+            updateTotalParticipation();
+        }
+        
+        // Update summary table with new grades
+        function updateSummaryTable(classId, midterm, homework, final) {
+            const midtermCell = document.getElementById(`summary-midterm-${classId}`);
+            const homeworkCell = document.getElementById(`summary-homework-${classId}`);
+            const finalCell = document.getElementById(`summary-final-${classId}`);
+            const averageCell = document.getElementById(`summary-average-${classId}`);
+            
+            if (midtermCell) midtermCell.textContent = midterm ? parseFloat(midterm).toFixed(2) : '--';
+            if (homeworkCell) homeworkCell.textContent = homework ? parseFloat(homework).toFixed(2) : '--';
+            if (finalCell) finalCell.textContent = final ? parseFloat(final).toFixed(2) : '--';
+            
+            // Calculate average
+            const grades = [midterm, homework, final].filter(g => g !== null && g !== '');
+            if (grades.length > 0 && averageCell) {
+                const avg = grades.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / grades.length;
+                averageCell.textContent = avg.toFixed(2);
+            } else if (averageCell) {
+                averageCell.textContent = '--';
+            }
+        }
+        
+        // Update total participation count
+        function updateTotalParticipation() {
+            const participationCells = document.querySelectorAll('.participation-cell');
+            let total = 0;
+            participationCells.forEach(cell => {
+                total += parseInt(cell.textContent) || 0;
+            });
+            const totalCell = document.getElementById('total-participation');
+            if (totalCell) {
+                totalCell.textContent = total;
             }
         }
 
-        // Date input change handler
-        document.querySelectorAll('.date-input').forEach(input => {
-            input.addEventListener('change', function() {
-                const classId = this.dataset.classId;
-                // Check if this date has participation
-                // In a real app, you'd fetch this from the server
-                // For now, we'll just reset the button state
-            });
-        });
     </script>
 </body>
 </html>

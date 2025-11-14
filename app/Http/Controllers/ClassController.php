@@ -17,6 +17,17 @@ class ClassController extends Controller
         return view('classes.index', compact('classes'));
     }
 
+    public function checkParticipation(Request $request, HbsClass $class)
+    {
+        $date = $request->input('date', today()->toDateString());
+        
+        $hasParticipation = Participation::where('class_id', $class->id)
+            ->where('date', $date)
+            ->exists();
+        
+        return response()->json(['has_participation' => $hasParticipation]);
+    }
+
     public function toggleParticipation(Request $request, HbsClass $class)
     {
         $date = $request->input('date', today()->toDateString());

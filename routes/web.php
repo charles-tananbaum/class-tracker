@@ -30,6 +30,7 @@ Route::get('/health', function () {
 });
 
 Route::get('/', [ClassController::class, 'index'])->name('classes.index');
+Route::get('/classes/{class}/participation', [ClassController::class, 'checkParticipation'])->name('classes.check-participation');
 Route::post('/classes/{class}/participation', [ClassController::class, 'toggleParticipation'])->name('classes.toggle-participation');
 Route::post('/classes/{class}/grade', [ClassController::class, 'updateGrade'])->name('classes.update-grade');
 

@@ -439,3 +439,172 @@ input[type="number"]::-webkit-outer-spin-button {
     margin: 0;
 }
 
+/* Summary Table */
+.summary-section {
+    margin-top: 40px;
+    margin-bottom: 30px;
+    border: 2px solid #00ff41;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    box-shadow: 
+        0 0 15px rgba(0, 255, 65, 0.2),
+        inset 0 0 15px rgba(0, 255, 65, 0.05);
+}
+
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+}
+
+.summary-table thead {
+    border-bottom: 2px solid #00ff41;
+}
+
+.summary-table th {
+    padding: 12px 8px;
+    text-align: left;
+    color: #00ff41;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: bold;
+    background: rgba(0, 255, 65, 0.1);
+}
+
+.summary-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+    color: #00ff88;
+}
+
+.summary-table tbody tr:hover {
+    background: rgba(0, 255, 65, 0.05);
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.1);
+}
+
+.summary-table tfoot {
+    border-top: 2px solid #00ff41;
+}
+
+.summary-table .summary-total {
+    background: rgba(0, 255, 65, 0.1);
+    font-weight: bold;
+    color: #00ff41;
+}
+
+.summary-table .class-code-cell {
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    color: #00ff41;
+    text-shadow: 0 0 5px #00ff41;
+}
+
+.summary-table .participation-cell {
+    text-align: center;
+    color: #00ff88;
+    font-weight: bold;
+}
+
+.summary-table .grade-cell {
+    text-align: center;
+    color: #00ff88;
+}
+
+.summary-table .average-cell {
+    text-align: center;
+    color: #00ff41;
+    font-weight: bold;
+    font-size: 14px;
+    text-shadow: 0 0 5px #00ff41;
+}
+
+/* Flatpickr Calendar Styling */
+.flatpickr-calendar {
+    background: #0a0a0a !important;
+    border: 2px solid #00ff41 !important;
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.5) !important;
+    font-family: 'Share Tech Mono', monospace !important;
+}
+
+.flatpickr-months {
+    background: rgba(0, 255, 65, 0.1) !important;
+    border-bottom: 1px solid #00ff41 !important;
+}
+
+.flatpickr-month {
+    color: #00ff41 !important;
+}
+
+.flatpickr-current-month {
+    color: #00ff41 !important;
+    font-weight: bold !important;
+}
+
+.flatpickr-weekdays {
+    background: rgba(0, 255, 65, 0.05) !important;
+}
+
+.flatpickr-weekday {
+    color: #00ff88 !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+}
+
+.flatpickr-day {
+    color: #00ff88 !important;
+    border: 1px solid rgba(0, 255, 65, 0.2) !important;
+}
+
+.flatpickr-day:hover {
+    background: rgba(0, 255, 65, 0.2) !important;
+    border-color: #00ff41 !important;
+    color: #00ff41 !important;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    background: #00ff41 !important;
+    color: #0a0a0a !important;
+    border-color: #00ff41 !important;
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.7) !important;
+}
+
+.flatpickr-day.today {
+    border-color: #00ff88 !important;
+    color: #00ff88 !important;
+}
+
+.flatpickr-day.today.selected {
+    background: #00ff41 !important;
+    color: #0a0a0a !important;
+}
+
+.flatpickr-prev-month,
+.flatpickr-next-month {
+    color: #00ff41 !important;
+    fill: #00ff41 !important;
+}
+
+.flatpickr-prev-month:hover,
+.flatpickr-next-month:hover {
+    background: rgba(0, 255, 65, 0.2) !important;
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+    .summary-table {
+        font-size: 10px;
+    }
+    
+    .summary-table th,
+    .summary-table td {
+        padding: 8px 4px;
+    }
+    
+    .summary-section {
+        overflow-x: auto;
+    }
+}
+
