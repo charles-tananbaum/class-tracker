@@ -67,3 +67,33 @@ php artisan view:cache
 3. **Database file permissions:** Ensure the `database/` directory is writable (chmod 775)
 4. **Storage permissions:** Ensure the `storage/` directory is writable (chmod 775)
 
+## Troubleshooting
+
+### "Failed connecting to unix:///tmp/cloud-init.sock" Error
+
+This error is typically from the deployment platform's system services, not your application. To fix:
+
+1. **Check your deployment logs** - Look for the actual error after this message
+2. **Verify migrations are running** - The real issue might be migration failures
+3. **Try running migrations manually** in your deployment platform's console/SSH:
+   ```bash
+   php artisan migrate --force
+   ```
+
+### Migration Errors
+
+If migrations fail, you can reset and start fresh:
+```bash
+php artisan migrate:fresh --force
+php artisan db:seed --class=ClassSeeder --force
+```
+
+**Note:** This will delete all existing data. Only use on fresh deployments.
+
+### Database Connection Issues
+
+If you see database connection errors:
+1. Verify `.env` file has correct database settings
+2. Check that `database/database.sqlite` file exists and is writable
+3. Ensure `database/` directory has proper permissions (775)
+
